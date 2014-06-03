@@ -9,7 +9,8 @@ module AsciiCharts
     DEFAULT_MAX_Y_VALS = 20
     DEFAULT_MIN_Y_VALS = 10
 
-    #data is a sorted array of [x, y] pairs
+    #data is a sorted array of [x, y, m] triplets
+    #`m` is the single-character marker to display and it defaults to '*'
 
     def initialize(data, options={})
       @data = data
@@ -18,7 +19,7 @@ module AsciiCharts
 
 
     def rounded_data
-      @rounded_data ||= self.data.map{|pair| [pair[0], self.round_value(pair[1])]}
+      @rounded_data ||= self.data.map{|pair| [pair[0], self.round_value(pair[1]), pair[2] || '*']}
     end
 
     def step_size
@@ -71,7 +72,7 @@ module AsciiCharts
 
     def to_step(num, order)
       s = num * (10 ** order)
-      if order < 0        
+      if order < 0
         s.to_f
       else
         s
@@ -116,7 +117,7 @@ module AsciiCharts
         (unprecised * (10 ** precision)).to_i.to_f / (10 ** precision)
       else
         unprecised
-      end      
+      end
     end
 
     def max_yval
@@ -226,11 +227,11 @@ module AsciiCharts
 
     def lines
       if self.data.size == 0
-        return [[' ', self.options[:title], ' ', '|', '+-', ' ']] 
+        return [[' ', self.options[:title], ' ', '|', '+-', ' ']]
       end
 
       lines = [' ']
-      
+
       bar_width = self.max_xval_width + 1
 
       lines << (' ' * self.max_yval_width) + ' ' + self.rounded_data.map{|pair| pair[0].to_s.center(bar_width)}.join('')
@@ -243,12 +244,12 @@ module AsciiCharts
                 '|'
               end
         current_line = [(' ' * (self.max_yval_width - yval.length) ) + "#{current_y}#{bar}"]
-        
+
         self.rounded_data.each do |pair|
           marker = if (0 == i) && options[:hide_zero]
                      '-'
                    else
-                     '*'
+                     pair[2]
                    end
           filler = if 0 == i
                      '-'
